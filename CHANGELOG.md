@@ -11,7 +11,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- Publish as `@soulwax/syn.js` because npm rejects the unscoped name as too similar to existing packages. The 0.2.0 candidate was not published.
+- Publish as `bragi-audio` because npm rejects `syn.js` as too similar to existing packages. The 0.2.0 candidate was not published.
 
 ## [0.2.0] - 2026-09-28
 

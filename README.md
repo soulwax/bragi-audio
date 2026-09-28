@@ -1,26 +1,26 @@
-# syn.js
+# bragi-audio
 
 Audio metadata, browser playback, bounded streaming and downloads, and PCM/WAV codecs.
 
 The package works independently of Syn, SvelteKit, TIDAL, databases, object storage, and application
 configuration. It exposes four independent entry points:
 
-- **`@soulwax/syn.js`** identifies containers and reads normalized embedded metadata through `music-metadata`.
-- **`@soulwax/syn.js/player`** owns a native audio element, temporary Blob sources, volume, queue helpers,
+- **`bragi-audio`** identifies containers and reads normalized embedded metadata through `music-metadata`.
+- **`bragi-audio/player`** owns a native audio element, temporary Blob sources, volume, queue helpers,
   Media Session, metadata loading, and look-ahead preloading. No runtime dependencies.
-- **`@soulwax/syn.js/delivery`** streams and downloads audio with Web Fetch, bounded reads, transient retries,
+- **`bragi-audio/delivery`** streams and downloads audio with Web Fetch, bounded reads, transient retries,
   cancellation, and HTTP range helpers. No runtime dependencies or filesystem access.
-- **`@soulwax/syn.js/audio`** encodes and decodes mono/stereo PCM WAV and delegates other complete-file
+- **`bragi-audio/audio`** encodes and decodes mono/stereo PCM WAV and delegates other complete-file
   decoding to a caller-supplied browser audio context. No runtime dependencies.
 
 Only importing the root entry loads the metadata parser. Import the subpath you need.
 
-The public npm name is `@soulwax/syn.js`; npm reserves the unscoped name as too similar to existing packages.
+The public npm name is `bragi-audio`; the source repository remains `soulwax/syn.js`.
 
 ## Install
 
 ```sh
-pnpm add @soulwax/syn.js
+pnpm add bragi-audio
 ```
 
 Node 20.19 or newer and ESM are required.
@@ -28,7 +28,7 @@ Node 20.19 or newer and ESM are required.
 ## Analyze a file
 
 ```ts
-import { analyzeAudio } from "@soulwax/syn.js";
+import { analyzeAudio } from "bragi-audio";
 
 const bytes = new Uint8Array(await file.arrayBuffer());
 const analysis = await analyzeAudio(
@@ -50,7 +50,7 @@ warnings by default or `AudioMetadataError` with code `hint_mismatch` in strict 
 ## Analyze a Web stream
 
 ```ts
-import { analyzeWebStream } from "@soulwax/syn.js";
+import { analyzeWebStream } from "bragi-audio";
 
 const analysis = await analyzeWebStream(upload.body, {
   fileName: upload.name,
@@ -69,11 +69,7 @@ does not accept arbitrary Node streams.
 ## Detect without parsing
 
 ```ts
-import {
-  AUDIO_ACCEPT,
-  AUDIO_FORMATS,
-  detectAudioFormat,
-} from "@soulwax/syn.js";
+import { AUDIO_ACCEPT, AUDIO_FORMATS, detectAudioFormat } from "bragi-audio";
 
 const detected = detectAudioFormat(bytes);
 console.log(detected?.contentType);
@@ -93,10 +89,10 @@ The parser runs in-process. `AbortSignal` is checked before reading and before r
 not a hard CPU timeout. Use a worker/process boundary if your threat model requires forced
 termination.
 
-## Browser playback (`@soulwax/syn.js/player`)
+## Browser playback (`bragi-audio/player`)
 
 ```ts
-import { AudioEngine, replayGainToLinear } from "@soulwax/syn.js/player";
+import { AudioEngine, replayGainToLinear } from "bragi-audio/player";
 
 const engine = new AudioEngine({
   onTimeUpdate: (seconds) => render(seconds),
@@ -139,10 +135,10 @@ The supporting exports are framework-agnostic:
 Every module is safe to import during server-side rendering; nothing touches `window`, `document`,
 or `navigator` until you call it.
 
-## Streaming and downloading (`@soulwax/syn.js/delivery`)
+## Streaming and downloading (`bragi-audio/delivery`)
 
 ```ts
-import { fetchAudioStream, downloadAudio } from "@soulwax/syn.js/delivery";
+import { fetchAudioStream, downloadAudio } from "bragi-audio/delivery";
 
 // Streaming honors backpressure; cancelling the body cancels the upstream request.
 const response = await fetchAudioStream(
@@ -169,11 +165,11 @@ The caller supplies an authorized media source and any required headers. Provide
 DRM, DASH/HLS manifest resolution and segment assembly are outside this release. Browser Fetch
 still follows CORS. Keep provider credentials and private media URLs on your server.
 
-## Encoding and decoding (`@soulwax/syn.js/audio`)
+## Encoding and decoding (`bragi-audio/audio`)
 
 ```ts
-import { encodeWav, decodeWav, decodeAudio } from "@soulwax/syn.js/audio";
-import { AudioEngine } from "@soulwax/syn.js/player";
+import { encodeWav, decodeWav, decodeAudio } from "bragi-audio/audio";
+import { AudioEngine } from "bragi-audio/player";
 
 const wav = encodeWav(
   { sampleRate: 48000, channels: [left, right] },

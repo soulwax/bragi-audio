@@ -1,5 +1,5 @@
 {
-  "name": "@soulwax/syn.js",
+  "name": "bragi-audio",
   "version": "0.2.1",
   "description": "Audio metadata, browser playback, bounded streaming and downloads, and PCM/WAV codecs.",
   "type": "module",
