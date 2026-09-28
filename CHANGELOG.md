@@ -7,6 +7,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-28
+
+### Changed
+
+- Publish as `@soulwax/syn.js` because npm rejects the unscoped name as too similar to existing packages. The 0.2.0 candidate was not published.
+
 ## [0.2.0] - 2026-09-28
 
 ### Added
@@ -38,6 +44,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Structured mismatch warnings and stable error codes.
 - Opt-in, bounded embedded artwork extraction.
 
-[Unreleased]: https://github.com/soulwax/syn.js/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/soulwax/syn.js/compare/v0.2.1...HEAD
 [0.1.0]: https://github.com/soulwax/syn.js/releases/tag/v0.1.0
 [0.2.0]: https://github.com/soulwax/syn.js/releases/tag/v0.2.0
+[0.2.1]: https://github.com/soulwax/syn.js/releases/tag/v0.2.1

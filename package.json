@@ -1,6 +1,6 @@
 {
-  "name": "syn.js",
-  "version": "0.2.0",
+  "name": "@soulwax/syn.js",
+  "version": "0.2.1",
   "description": "Audio metadata, browser playback, bounded streaming and downloads, and PCM/WAV codecs.",
   "type": "module",
   "license": "MIT",
