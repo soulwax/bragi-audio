@@ -34,6 +34,12 @@ export class AudioEngine {
     mediaSourceNode = null;
     gainNode = null;
     lifecycleInstalled = false;
+    objectUrl = null;
+    listeners = [];
+    listen(target, type, listener) {
+        target.addEventListener(type, listener);
+        this.listeners.push(() => target.removeEventListener(type, listener));
+    }
     events;
     createElement;
     createContext;
@@ -57,7 +63,7 @@ export class AudioEngine {
         audio.preload = "auto";
         audio.setAttribute("playsinline", "true");
         audio.setAttribute("webkit-playsinline", "true");
-        audio.addEventListener("timeupdate", () => {
+        this.listen(audio, "timeupdate", () => {
             if (!Number.isNaN(audio.currentTime))
                 this.events.onTimeUpdate?.(audio.currentTime);
         });
@@ -66,15 +72,15 @@ export class AudioEngine {
                 this.events.onDuration?.(audio.duration);
             }
         };
-        audio.addEventListener("durationchange", onMeta);
-        audio.addEventListener("loadedmetadata", onMeta);
-        audio.addEventListener("progress", () => this.events.onProgress?.());
-        audio.addEventListener("waiting", () => this.events.onWaiting?.());
-        audio.addEventListener("playing", () => this.events.onPlaying?.());
-        audio.addEventListener("play", () => this.events.onPlay?.());
-        audio.addEventListener("pause", () => this.events.onPause?.());
-        audio.addEventListener("ended", () => this.events.onEnded?.());
-        audio.addEventListener("error", () => this.events.onError?.(audio.error));
+        this.listen(audio, "durationchange", onMeta);
+        this.listen(audio, "loadedmetadata", onMeta);
+        this.listen(audio, "progress", () => this.events.onProgress?.());
+        this.listen(audio, "waiting", () => this.events.onWaiting?.());
+        this.listen(audio, "playing", () => this.events.onPlaying?.());
+        this.listen(audio, "play", () => this.events.onPlay?.());
+        this.listen(audio, "pause", () => this.events.onPause?.());
+        this.listen(audio, "ended", () => this.events.onEnded?.());
+        this.listen(audio, "error", () => this.events.onError?.(audio.error));
         this.installLifecycle();
         return true;
     }
@@ -82,13 +88,13 @@ export class AudioEngine {
         if (!this.lifecycle || this.lifecycleInstalled)
             return;
         this.lifecycleInstalled = true;
-        document.addEventListener("visibilitychange", () => {
+        this.listen(document, "visibilitychange", () => {
             if (document.visibilityState !== "visible")
                 return;
             this.resume();
             this.events.onWake?.();
         });
-        window.addEventListener("online", () => this.resume());
+        this.listen(window, "online", () => this.resume());
     }
     get hasElement() {
         return this.audio !== null;
@@ -115,6 +121,7 @@ export class AudioEngine {
     load(src, startAt = 0) {
         if (!this.audio)
             return;
+        this.releaseObjectUrl();
         this.audio.src = src;
         if (startAt > 0) {
             try {
@@ -124,6 +131,21 @@ export class AudioEngine {
                 // The stream may not be seekable until metadata arrives.
             }
         }
+    }
+    /** Play downloaded or locally encoded audio; the engine owns its temporary URL. */
+    loadBlob(blob, startAt = 0) {
+        if (!this.init() || typeof URL.createObjectURL !== "function")
+            return false;
+        const url = URL.createObjectURL(blob);
+        this.load(url, startAt);
+        this.objectUrl = url;
+        return true;
+    }
+    releaseObjectUrl() {
+        if (this.objectUrl === null)
+            return;
+        URL.revokeObjectURL(this.objectUrl);
+        this.objectUrl = null;
     }
     /** Start playback. Resolves false when the browser refused (autoplay policy, bad source). */
     async play() {
@@ -156,6 +178,7 @@ export class AudioEngine {
             return;
         this.audio.pause();
         this.audio.src = "";
+        this.releaseObjectUrl();
     }
     /**
      * Percentage of the track buffered, measured at the range containing the
@@ -229,6 +252,9 @@ export class AudioEngine {
     }
     destroy() {
         this.unload();
+        for (const remove of this.listeners.splice(0))
+            remove();
+        this.lifecycleInstalled = false;
         this.audio = null;
         if (this.audioContext && this.audioContext.state !== "closed") {
             void this.audioContext.close().catch(() => undefined);

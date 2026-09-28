@@ -38,6 +38,12 @@ class FakeElement {
   addEventListener(name: string, listener: () => void): void {
     this.listeners.set(name, [...(this.listeners.get(name) ?? []), listener]);
   }
+  removeEventListener(name: string, listener: () => void): void {
+    this.listeners.set(
+      name,
+      (this.listeners.get(name) ?? []).filter((value) => value !== listener),
+    );
+  }
   dispatch(name: string): void {
     for (const listener of this.listeners.get(name) ?? []) listener();
   }
@@ -162,6 +168,41 @@ describe("AudioEngine", () => {
     expect(element.paused).toBe(true);
     expect(element.src).toBe("");
     expect(engine.hasElement).toBe(true);
+  });
+
+  it("owns and revokes blob URLs when replacing or destroying a source", () => {
+    const create = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValueOnce("blob:first")
+      .mockReturnValueOnce("blob:second");
+    const revoke = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => undefined);
+    try {
+      const { engine, element } = setup();
+      expect(engine.loadBlob(new Blob(["first"]))).toBe(true);
+      expect(element.src).toBe("blob:first");
+      engine.load("/stream");
+      expect(revoke).toHaveBeenCalledWith("blob:first");
+      engine.loadBlob(new Blob(["second"]));
+      engine.destroy();
+      expect(revoke).toHaveBeenCalledWith("blob:second");
+      expect(create).toHaveBeenCalledTimes(2);
+    } finally {
+      create.mockRestore();
+      revoke.mockRestore();
+    }
+  });
+
+  it("removes listeners on destroy and can be initialized again", () => {
+    const onEnded = vi.fn();
+    const { engine, element } = setup({ onEnded });
+    engine.destroy();
+    element.dispatch("ended");
+    expect(onEnded).not.toHaveBeenCalled();
+    engine.init();
+    element.dispatch("ended");
+    expect(onEnded).toHaveBeenCalledOnce();
   });
 
   it("measures the buffered range around the playhead", () => {
