@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 const playerDir = join(import.meta.dirname, "../../src/player");
 
-describe("syn.js/player entry", () => {
+describe("bragi-audio/player entry", () => {
   it("imports only its own modules, so browser bundles never pull in Node or the parser", () => {
     const specifiers = readdirSync(playerDir)
       .filter((name) => name.endsWith(".ts"))

@@ -212,7 +212,7 @@ export async function analyzeAudio(input, hints, options = {}) {
  *
  * The supplied size is a required admission limit, not a value inferred from
  * the stream. Pass trusted object-storage metadata or a validated
- * Content-Length value. syn.js reads until it has a 4 KiB detection prefix,
+ * Content-Length value. bragi-audio reads until it has a 4 KiB detection prefix,
  * then replays each pulled chunk into music-metadata.
  */
 export async function analyzeWebStream(stream, hints, options = {}) {

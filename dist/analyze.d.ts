@@ -10,7 +10,7 @@ export interface AudioHints {
  *
  * A stream has no intrinsic length, so callers must provide a trustworthy byte
  * count (for example, object-storage metadata or a validated Content-Length).
- * It lets syn.js reject oversized uploads before reading them.
+ * It lets bragi-audio reject oversized uploads before reading them.
  */
 export interface StreamAudioHints extends AudioHints {
     readonly size: number;
@@ -30,7 +30,7 @@ export declare function analyzeAudio(input: AudioInput, hints?: AudioHints, opti
  *
  * The supplied size is a required admission limit, not a value inferred from
  * the stream. Pass trusted object-storage metadata or a validated
- * Content-Length value. syn.js reads until it has a 4 KiB detection prefix,
+ * Content-Length value. bragi-audio reads until it has a 4 KiB detection prefix,
  * then replays each pulled chunk into music-metadata.
  */
 export declare function analyzeWebStream(stream: ReadableStream<Uint8Array>, hints: StreamAudioHints, options?: AnalyzeOptions): Promise<AudioAnalysis>;

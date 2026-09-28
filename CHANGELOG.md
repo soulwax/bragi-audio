@@ -7,21 +7,27 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-09-29
+
+### Changed
+
+- Use `bragi-audio` throughout source, built declarations, documentation, tests, and GitHub package links.
+
 ## [0.2.1] - 2026-09-28
 
 ### Changed
 
-- Publish as `bragi-audio` because npm rejects `syn.js` as too similar to existing packages. The 0.2.0 candidate was not published.
+- Publish the first npm release as `bragi-audio`. The 0.2.0 candidate was not published.
 
 ## [0.2.0] - 2026-09-28
 
 ### Added
 
-- `syn.js/delivery` for cancellable, bounded Web Fetch streaming/downloads and HTTP range/retry helpers.
-- `syn.js/audio` for mono/stereo PCM16, PCM24 and float32 WAV encoding/decoding and caller-owned native browser decoding.
+- `bragi-audio/delivery` for cancellable, bounded Web Fetch streaming/downloads and HTTP range/retry helpers.
+- `bragi-audio/audio` for mono/stereo PCM16, PCM24 and float32 WAV encoding/decoding and caller-owned native browser decoding.
 - `StreamLoader` for bounded, validated application-owned stream metadata.
 - `AudioEngine.loadBlob` for temporary sources, with object-URL and listener cleanup on destruction.
-- `syn.js/player`, a dependency-free browser entry point: `AudioEngine` (one `<audio>` element with
+- `bragi-audio/player`, a dependency-free browser entry point: `AudioEngine` (one `<audio>` element with
   an opt-in, de-clicked Web Audio headroom stage), `replayGainToLinear`, queue identity and
   `rebaseQueue`, `assessPlayback` with stable issue codes, `StreamPreloader`, and Media Session
   helpers.
@@ -44,7 +50,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Structured mismatch warnings and stable error codes.
 - Opt-in, bounded embedded artwork extraction.
 
-[Unreleased]: https://github.com/soulwax/syn.js/compare/v0.2.1...HEAD
-[0.1.0]: https://github.com/soulwax/syn.js/releases/tag/v0.1.0
-[0.2.0]: https://github.com/soulwax/syn.js/releases/tag/v0.2.0
-[0.2.1]: https://github.com/soulwax/syn.js/releases/tag/v0.2.1
+[Unreleased]: https://github.com/soulwax/bragi-audio/compare/v0.2.2...HEAD
+[0.1.0]: https://github.com/soulwax/bragi-audio/releases/tag/v0.1.0
+[0.2.0]: https://github.com/soulwax/bragi-audio/releases/tag/v0.2.0
+[0.2.1]: https://github.com/soulwax/bragi-audio/releases/tag/v0.2.1
+[0.2.2]: https://github.com/soulwax/bragi-audio/releases/tag/v0.2.2

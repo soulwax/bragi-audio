@@ -15,7 +15,7 @@ configuration. It exposes four independent entry points:
 
 Only importing the root entry loads the metadata parser. Import the subpath you need.
 
-The public npm name is `bragi-audio`; the source repository remains `soulwax/syn.js`.
+The npm package and source repository are both named `bragi-audio`.
 
 ## Install
 
@@ -202,7 +202,7 @@ The encoder currently outputs WAV; compressed MP3/AAC/FLAC encoding is outside t
 
 ## Supported versus playable
 
-Support means that `syn.js` can identify the container and ask `music-metadata` to parse it. It does
+Support means that `bragi-audio` can identify the container and ask `music-metadata` to parse it. It does
 not guarantee that Node, a browser, FFmpeg, or a particular device can decode the contained codec.
 Always use `analysis.format.container` and `analysis.format.codec` for a separate playback or
 processing decision.

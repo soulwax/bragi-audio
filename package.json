@@ -1,16 +1,16 @@
 {
   "name": "bragi-audio",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Audio metadata, browser playback, bounded streaming and downloads, and PCM/WAV codecs.",
   "type": "module",
   "license": "MIT",
   "author": "soulwax",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/soulwax/syn.js.git"
+    "url": "git+https://github.com/soulwax/bragi-audio.git"
   },
-  "homepage": "https://github.com/soulwax/syn.js#readme",
-  "bugs": "https://github.com/soulwax/syn.js/issues",
+  "homepage": "https://github.com/soulwax/bragi-audio#readme",
+  "bugs": "https://github.com/soulwax/bragi-audio/issues",
   "keywords": [
     "audio",
     "metadata",
