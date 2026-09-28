@@ -1,7 +1,7 @@
 {
   "name": "syn.js",
   "version": "0.1.0",
-  "description": "Bounded audio format detection and normalized music metadata for server-side JavaScript.",
+  "description": "Audio format detection, normalized music metadata, and a framework-agnostic browser playback engine.",
   "type": "module",
   "license": "MIT",
   "author": "soulwax",
@@ -20,7 +20,12 @@
     "m4a",
     "ogg",
     "wav",
-    "webm"
+    "webm",
+    "player",
+    "playback",
+    "media-session",
+    "web-audio",
+    "replaygain"
   ],
   "engines": {
     "node": ">=20"
@@ -37,6 +42,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./player": {
+      "types": "./dist/player/index.d.ts",
+      "import": "./dist/player/index.js"
     }
   },
   "types": "./dist/index.d.ts",
@@ -59,6 +68,7 @@
     "@types/node": "24.5.2",
     "@vitest/coverage-v8": "4.1.8",
     "eslint": "10.0.1",
+    "fast-check": "4.9.0",
     "globals": "17.6.0",
     "prettier": "3.8.3",
     "typescript": "6.0.3",

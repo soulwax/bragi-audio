@@ -9,11 +9,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `syn.js/player`, a dependency-free browser entry point: `AudioEngine` (one `<audio>` element with
+  an opt-in, de-clicked Web Audio headroom stage), `replayGainToLinear`, queue identity and
+  `rebaseQueue`, `assessPlayback` with stable issue codes, `StreamPreloader`, and Media Session
+  helpers.
 - `analyzeWebStream` for bounded metadata inspection of Web byte streams with required trusted size
   metadata, container detection, and prefix replay into the parser.
 
 ### Changed
 
+- Declare the package its own pnpm workspace root, so pnpm run inside a parent checkout's submodule
+  no longer installs the parent project.
 - Strict hint validation now rejects unknown filename extensions and non-generic MIME declarations.
 - Commit distributable output so Syn can consume the checked submodule before the first npm release.
 

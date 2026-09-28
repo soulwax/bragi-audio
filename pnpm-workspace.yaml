@@ -1,0 +1,4 @@
+# Makes this package its own pnpm root. Without it, pnpm run inside the Syn
+# submodule checkout resolves to the parent app's workspace and installs that.
+packages:
+  - .
