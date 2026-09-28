@@ -1,7 +1,7 @@
 {
   "name": "syn.js",
-  "version": "0.1.0",
-  "description": "Audio format detection, normalized music metadata, and a framework-agnostic browser playback engine.",
+  "version": "0.2.0",
+  "description": "Audio metadata, browser playback, bounded streaming and downloads, and PCM/WAV codecs.",
   "type": "module",
   "license": "MIT",
   "author": "soulwax",
@@ -25,10 +25,15 @@
     "playback",
     "media-session",
     "web-audio",
-    "replaygain"
+    "replaygain",
+    "streaming",
+    "download",
+    "pcm",
+    "encoder",
+    "decoder"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=20.19"
   },
   "sideEffects": false,
   "files": [
@@ -46,6 +51,14 @@
     "./player": {
       "types": "./dist/player/index.d.ts",
       "import": "./dist/player/index.js"
+    },
+    "./delivery": {
+      "types": "./dist/delivery/index.d.ts",
+      "import": "./dist/delivery/index.js"
+    },
+    "./audio": {
+      "types": "./dist/audio/index.d.ts",
+      "import": "./dist/audio/index.js"
     }
   },
   "types": "./dist/index.d.ts",
@@ -75,5 +88,9 @@
     "typescript-eslint": "8.60.1",
     "vitest": "4.1.8"
   },
-  "packageManager": "pnpm@11.21.0"
+  "packageManager": "pnpm@11.21.0",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
 }

@@ -54,6 +54,9 @@ export declare class AudioEngine {
     private mediaSourceNode;
     private gainNode;
     private lifecycleInstalled;
+    private objectUrl;
+    private readonly listeners;
+    private listen;
     private readonly events;
     private readonly createElement;
     private readonly createContext;
@@ -72,6 +75,9 @@ export declare class AudioEngine {
     resume(): void;
     /** Point the element at a new source, optionally positioned. Does not start playback. */
     load(src: string, startAt?: number): void;
+    /** Play downloaded or locally encoded audio; the engine owns its temporary URL. */
+    loadBlob(blob: Blob, startAt?: number): boolean;
+    private releaseObjectUrl;
     /** Start playback. Resolves false when the browser refused (autoplay policy, bad source). */
     play(): Promise<boolean>;
     pause(): void;

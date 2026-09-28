@@ -7,8 +7,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-28
+
 ### Added
 
+- `syn.js/delivery` for cancellable, bounded Web Fetch streaming/downloads and HTTP range/retry helpers.
+- `syn.js/audio` for mono/stereo PCM16, PCM24 and float32 WAV encoding/decoding and caller-owned native browser decoding.
+- `StreamLoader` for bounded, validated application-owned stream metadata.
+- `AudioEngine.loadBlob` for temporary sources, with object-URL and listener cleanup on destruction.
 - `syn.js/player`, a dependency-free browser entry point: `AudioEngine` (one `<audio>` element with
   an opt-in, de-clicked Web Audio headroom stage), `replayGainToLinear`, queue identity and
   `rebaseQueue`, `assessPlayback` with stable issue codes, `StreamPreloader`, and Media Session
@@ -32,5 +38,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Structured mismatch warnings and stable error codes.
 - Opt-in, bounded embedded artwork extraction.
 
-[Unreleased]: https://github.com/soulwax/syn.js/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/soulwax/syn.js/compare/v0.2.0...HEAD
 [0.1.0]: https://github.com/soulwax/syn.js/releases/tag/v0.1.0
+[0.2.0]: https://github.com/soulwax/syn.js/releases/tag/v0.2.0

@@ -1,19 +1,19 @@
 # syn.js
 
-Bounded audio format detection, normalized music metadata, and a framework-agnostic browser
-playback engine.
+Audio metadata, browser playback, bounded streaming and downloads, and PCM/WAV codecs.
 
-The package has two independent entry points:
+The package works independently of Syn, SvelteKit, TIDAL, databases, object storage, and application
+configuration. It exposes four independent entry points:
 
-- **`syn.js`** (server) identifies the real container from bytes and reads embedded metadata without
-  coupling your application to parser-specific objects. It supports MP3, FLAC, raw AAC/ADTS,
-  M4A/MP4, Ogg, WAV, and WebM. It does not decode, transcode, upload, store, or fetch audio.
-- **`syn.js/player`** (browser) drives one `<audio>` element with a headroom-capable volume stage,
-  and ships the pure pieces around it: queue identity and conflict rebasing, a playback self-check,
-  a look-ahead preloader, and Media Session wiring. It has no dependencies, never imports the
-  metadata parser, and does not know where your audio comes from.
+- **`syn.js`** identifies containers and reads normalized embedded metadata through `music-metadata`.
+- **`syn.js/player`** owns a native audio element, temporary Blob sources, volume, queue helpers,
+  Media Session, metadata loading, and look-ahead preloading. No runtime dependencies.
+- **`syn.js/delivery`** streams and downloads audio with Web Fetch, bounded reads, transient retries,
+  cancellation, and HTTP range helpers. No runtime dependencies or filesystem access.
+- **`syn.js/audio`** encodes and decodes mono/stereo PCM WAV and delegates other complete-file
+  decoding to a caller-supplied browser audio context. No runtime dependencies.
 
-> **Status:** `0.1.0` is an initial API. The package has not been published to npm yet.
+Only importing the root entry loads the metadata parser. Import the subpath you need.
 
 ## Install
 
@@ -21,7 +21,7 @@ The package has two independent entry points:
 pnpm add syn.js
 ```
 
-Node 20 or newer and ESM are required.
+Node 20.19 or newer and ESM are required.
 
 ## Analyze a file
 
@@ -119,18 +119,84 @@ unity whenever native volume suffices. Keep `allowWebAudio` false on iOS/mobile:
 through `createMediaElementSource` makes WebKit classify it as ambient Web Audio, which is suspended
 when the screen locks.
 
-The other exports are pure and framework-agnostic:
+The supporting exports are framework-agnostic:
 
 | Export                                                                                           | Purpose                                                                                                                                                                                                      |
 | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `createQueueEntry`, `createQueueEntries`, `toDisplayTrack`, `isQueueEntryId`                     | Give each queue occurrence its own `entryId`, so a track can appear twice and still be moved or removed on its own. Generic over any `{ id: string }` track shape.                                           |
 | `rebaseQueue`                                                                                    | Replay local queue commands (`append`, `prepend`, `remove`, `move`, `clear`, `replace`) onto an authoritative remote queue after a rejected write, within a length bound.                                    |
 | `assessPlayback`                                                                                 | Compare the element's duration and delivered quality with the catalogue: returns `preview`, `short`, `long`, and `downgraded` issue codes for you to word. Pass `qualityRank` to enable downgrade detection. |
+| `StreamLoader`                                                                                   | Fetch, bound, and validate application-owned stream metadata with injected URL and parsing callbacks; returns typed success/failure results.                                                                 |
 | `StreamPreloader`                                                                                | Look-ahead cache for per-track stream information. You supply `load(trackId)`; entries are handed out once and expire.                                                                                       |
 | `updateMediaMetadata`, `updatePlaybackState`, `updatePositionState`, `setupMediaSessionHandlers` | Best-effort Media Session wiring that never throws where the API is missing.                                                                                                                                 |
 
 Every module is safe to import during server-side rendering; nothing touches `window`, `document`,
 or `navigator` until you call it.
+
+## Streaming and downloading (`syn.js/delivery`)
+
+```ts
+import { fetchAudioStream, downloadAudio } from "syn.js/delivery";
+
+// Streaming honors backpressure; cancelling the body cancels the upstream request.
+const response = await fetchAudioStream(
+  "https://your-service.example/audio/1",
+  {
+    signal: controller.signal,
+    maxBytes: 128 * 1024 * 1024,
+    headers: { Range: "bytes=0-" },
+  },
+);
+await response.body!.pipeTo(destination);
+
+// Complete permitted audio in memory; no automatic save, upload, or durable cache.
+const bytes = await downloadAudio("https://your-service.example/audio/1");
+```
+
+Both methods use an injectable `fetchImpl`, preserve successful HTTP status and response headers,
+retry safe reads on transient failures, and enforce the byte limit even without `Content-Length`.
+`downloadAudio` holds the complete file in memory; use `fetchAudioStream` and `pipeTo` for large
+transfers. `parseByteRange`, `entityTag`, `matchesEntityTag`, `rangeIsUsable`, and
+`withTransientRetry` are also available for server delivery adapters.
+
+The caller supplies an authorized media source and any required headers. Provider authentication,
+DRM, DASH/HLS manifest resolution and segment assembly are outside this release. Browser Fetch
+still follows CORS. Keep provider credentials and private media URLs on your server.
+
+## Encoding and decoding (`syn.js/audio`)
+
+```ts
+import { encodeWav, decodeWav, decodeAudio } from "syn.js/audio";
+import { AudioEngine } from "syn.js/player";
+
+const wav = encodeWav(
+  { sampleRate: 48000, channels: [left, right] },
+  { bitDepth: 24 },
+);
+const pcm = decodeWav(wav);
+const engine = new AudioEngine();
+engine.loadBlob(new Blob([wav], { type: "audio/wav" }));
+await engine.play();
+engine.destroy(); // releases temporary URLs and listeners
+
+// Browser-supported codecs: MP3/AAC/FLAC/etc. support depends on the browser.
+const decoded = await decodeAudio(bytes, {
+  context: new OfflineAudioContext(2, 1, 48000),
+});
+```
+
+`encodeWav` writes signed PCM16/PCM24 or float32 WAV, interleaves mono/stereo channels, clips
+samples outside -1..1, and preserves the sample rate and caller data. `decodeWav` supports these
+same formats, skips unknown RIFF chunks, and validates chunk lengths, alignment and finite samples.
+Encoded and expanded PCM allocations default to 128 MiB limits (`maxBytes`, `maxPcmBytes`).
+`AudioCodecError` provides stable error codes.
+
+`decodeAudio` copies the supplied view so native input detachment cannot damage the caller's bytes.
+It uses complete files, resamples to the supplied context, and enforces `maxInputBytes`. Its optional
+`signal` prevents starting or returning aborted work; the native decode operation itself cannot be
+interrupted and its decoded-memory use is browser-owned. It creates no playback graph. Native
+streaming playback continues to use the media element rather than decoding a full track in memory.
+The encoder currently outputs WAV; compressed MP3/AAC/FLAC encoding is outside this release.
 
 ## Supported versus playable
 

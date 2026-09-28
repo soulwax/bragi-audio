@@ -78,6 +78,17 @@ export class AudioEngine {
   private mediaSourceNode: MediaElementAudioSourceNode | null = null;
   private gainNode: GainNode | null = null;
   private lifecycleInstalled = false;
+  private objectUrl: string | null = null;
+  private readonly listeners: (() => void)[] = [];
+
+  private listen(
+    target: EventTarget,
+    type: string,
+    listener: EventListener,
+  ): void {
+    target.addEventListener(type, listener);
+    this.listeners.push(() => target.removeEventListener(type, listener));
+  }
 
   private readonly events: AudioEngineEvents;
   private readonly createElement: () => HTMLAudioElement | null;
@@ -106,7 +117,7 @@ export class AudioEngine {
     audio.setAttribute("playsinline", "true");
     audio.setAttribute("webkit-playsinline", "true");
 
-    audio.addEventListener("timeupdate", () => {
+    this.listen(audio, "timeupdate", () => {
       if (!Number.isNaN(audio.currentTime))
         this.events.onTimeUpdate?.(audio.currentTime);
     });
@@ -115,15 +126,15 @@ export class AudioEngine {
         this.events.onDuration?.(audio.duration);
       }
     };
-    audio.addEventListener("durationchange", onMeta);
-    audio.addEventListener("loadedmetadata", onMeta);
-    audio.addEventListener("progress", () => this.events.onProgress?.());
-    audio.addEventListener("waiting", () => this.events.onWaiting?.());
-    audio.addEventListener("playing", () => this.events.onPlaying?.());
-    audio.addEventListener("play", () => this.events.onPlay?.());
-    audio.addEventListener("pause", () => this.events.onPause?.());
-    audio.addEventListener("ended", () => this.events.onEnded?.());
-    audio.addEventListener("error", () => this.events.onError?.(audio.error));
+    this.listen(audio, "durationchange", onMeta);
+    this.listen(audio, "loadedmetadata", onMeta);
+    this.listen(audio, "progress", () => this.events.onProgress?.());
+    this.listen(audio, "waiting", () => this.events.onWaiting?.());
+    this.listen(audio, "playing", () => this.events.onPlaying?.());
+    this.listen(audio, "play", () => this.events.onPlay?.());
+    this.listen(audio, "pause", () => this.events.onPause?.());
+    this.listen(audio, "ended", () => this.events.onEnded?.());
+    this.listen(audio, "error", () => this.events.onError?.(audio.error));
 
     this.installLifecycle();
     return true;
@@ -132,12 +143,12 @@ export class AudioEngine {
   private installLifecycle(): void {
     if (!this.lifecycle || this.lifecycleInstalled) return;
     this.lifecycleInstalled = true;
-    document.addEventListener("visibilitychange", () => {
+    this.listen(document, "visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
       this.resume();
       this.events.onWake?.();
     });
-    window.addEventListener("online", () => this.resume());
+    this.listen(window, "online", () => this.resume());
   }
 
   get hasElement(): boolean {
@@ -170,6 +181,7 @@ export class AudioEngine {
   /** Point the element at a new source, optionally positioned. Does not start playback. */
   load(src: string, startAt = 0): void {
     if (!this.audio) return;
+    this.releaseObjectUrl();
     this.audio.src = src;
     if (startAt > 0) {
       try {
@@ -178,6 +190,21 @@ export class AudioEngine {
         // The stream may not be seekable until metadata arrives.
       }
     }
+  }
+
+  /** Play downloaded or locally encoded audio; the engine owns its temporary URL. */
+  loadBlob(blob: Blob, startAt = 0): boolean {
+    if (!this.init() || typeof URL.createObjectURL !== "function") return false;
+    const url = URL.createObjectURL(blob);
+    this.load(url, startAt);
+    this.objectUrl = url;
+    return true;
+  }
+
+  private releaseObjectUrl(): void {
+    if (this.objectUrl === null) return;
+    URL.revokeObjectURL(this.objectUrl);
+    this.objectUrl = null;
   }
 
   /** Start playback. Resolves false when the browser refused (autoplay policy, bad source). */
@@ -209,6 +236,7 @@ export class AudioEngine {
     if (!this.audio) return;
     this.audio.pause();
     this.audio.src = "";
+    this.releaseObjectUrl();
   }
 
   /**
@@ -283,6 +311,8 @@ export class AudioEngine {
 
   destroy(): void {
     this.unload();
+    for (const remove of this.listeners.splice(0)) remove();
+    this.lifecycleInstalled = false;
     this.audio = null;
     if (this.audioContext && this.audioContext.state !== "closed") {
       void this.audioContext.close().catch(() => undefined);
