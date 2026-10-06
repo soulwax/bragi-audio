@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -12,6 +17,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         node: [20, 22, 24]
     steps:
@@ -21,7 +27,19 @@ jobs:
           version: 11.21.0
       - uses: actions/setup-node@v5
         with:
-          node-version: ${{ matrix.node }}
+          # pnpm 11 needs Node >=22.13; library compatibility is tested below.
+          node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          package-manager-cache: false
+      - run: node node_modules/vitest/vitest.mjs run
+      - uses: actions/setup-node@v5
+        if: always()
+        with:
+          # Restore the tooling runtime for the package-manager cleanup hooks.
+          node-version: 24
+          package-manager-cache: false

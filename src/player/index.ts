@@ -26,6 +26,12 @@ export type {
   MediaSessionTrack,
 } from "./media-session.js";
 export { StreamPreloader } from "./preloader.js";
+export { StreamLoader } from "./stream-loader.js";
+export type {
+  StreamLoaderOptions,
+  StreamLoadResult,
+  StreamFailure,
+} from "./stream-loader.js";
 export type { StreamPreloaderOptions } from "./preloader.js";
 export {
   createQueueEntries,

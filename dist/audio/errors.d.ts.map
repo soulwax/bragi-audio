@@ -1,0 +1,1 @@
+{"version":3,"file":"errors.d.ts","sourceRoot":"","sources":["../../src/audio/errors.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,mBAAmB,GAC3B,aAAa,GACb,aAAa,GACb,mBAAmB,GACnB,YAAY,GACZ,eAAe,CAAC;AAEpB,qBAAa,eAAgB,SAAQ,KAAK;IAGtC,QAAQ,CAAC,IAAI,EAAE,mBAAmB;IAFpC,SAAkB,IAAI,qBAAqB;gBAEhC,IAAI,EAAE,mBAAmB,EAClC,OAAO,EAAE,MAAM;CAIlB"}
